@@ -3,83 +3,167 @@ class Spaceship {
         this.dom = dom;
         this._init();
     }
+    canMove = false;
     dom;
-    // left || center || right
-    align = 'center'; 
+    alignList = ['left', 'center', 'right'];
+    align = 1;
+    to = '' // left || right
+
+    _eventData = {};
 
     _init() {
         this._bindEvent();
+        this.updateClass();
     }
+
     _bindEvent() {
         this.dom.addEventListener('click', () => {
-            this.dom.classList.add('start');
+            this._eventData['click'].forEach(fn => fn());
         });
     }
-}
-
-class Boom {
-    constructor(
-        tunnelList = [],
-        radius = 10, // 爆炸半徑
-        position = [] // [x, y]
-    ) {
-        this.tunnelList = tunnelList;;
-        this.radius = radius;;
-        this.position = position;;
+    updateClass() {
+        this.dom.classList.remove('to-left', 'to-right');
+        if (this.to) {
+            this.dom.classList.add(`to-${this.to}`);
+        }
     }
-    tunnelList;
-    radius;
-    position;
-};
+
+    addEventListener(name, fn) {
+        if (!this._eventData[name]) {
+            this._eventData[name] = []
+        }
+        this._eventData[name].push(fn);
+    }
+    setAlign(align) {
+        console.log(align)
+        // 1 || -1
+        if (
+            this.align + align < 0 ||
+            this.align + align > 2
+        ) {
+            return;
+        }
+        this.align += align;
+        this.updatePosition();
+    }
+    setCanMove(bool) {
+        this.canMove = bool;
+        if (bool) {
+            this.dom.classList.add('move');
+        } else {
+            this.dom.classList.remove('move');
+        }
+    }
+    updatePosition() {
+        this.dom.style.marginLeft =
+            `${(this.align - 1) * WINDOWSIZE.height * 1.2 * 0.4}px`;
+    }
+
+    start() {
+        this.dom.classList.add('start');
+    }
+}
 
 class Tunnel {
     constructor(
         dom,
-        size = [], // width, height
-        position = [] // [x, y, z]
+        index = 0,
+        size = 10,
+        position = {} // {x, y, z}
     ) {
         this.dom = dom;
         this.size = size;
         this.position = position;
+
+        this.dom.setAttribute('data-index', index);
+
+        this.status = `type-${~~(Math.random() * 3)}`;
+        this.transformOrigin = `transform-origin-${(~~(Math.random() * 10) + 1) * 10}`;
+        this.turnType = `turn-${['right', 'left'][~~(Math.random() * 2)]}`;
+        this.turnSpeed = `turn-speed-${~~(Math.random() * 11) + 10}`;
+        this.opacity = Math.random() / 2;
+        this.dom.classList.add(
+            'tunnel',
+            this.status,
+            this.transformOrigin,
+            this.turnType,
+            this.turnSpeed
+        )
+        this.dom.style.opacity = this.opacity;
         this._init();
     }
     dom;
-    size;
+    size; // number
     position;
-    // shape || tunnel || button
-    status = 'shape';
-    // left || center || right
-    dot;
+    dot; // left || center || right
+    showDot = false;
+    status = ''; // .type-(0 || 1 || 2) || .screen-center
+    transformOrigin = ''; // .transform-origin-(10 ~ 100);
+    turnType = ''; // .turn-(right || left)
+    turnSpeed = ''; // .turn-speed-(10 ~ 20)
+    opacity = 0; // 0 ~ 0.5
 
     _init() {
-        this.update();
+        this._setDot();
+        this.updateClass();
+        this.updateStyle();
         this._bindEvent();
     }
 
     setPosition(x, y, z) {
-        this.position = [x, y, z];
+        this.position = { x, y, z };
     }
 
-    setSize(x, y, z) {
-        this.position = [x, y, z];
+    setSize(size) {
+        this.size = size;
+    }
+    setOpacity(opacity) {
+        this.opacity = opacity;
     }
 
-    setShape(width, height) {
-        this.size = [width, height];
+    setStatus(status) {
+        // 'type-0', 'type-1', 'type-2', 'screen-center'
+        this.status = status;
+    }
+    setShowDot(bool) {
+        this.showDot = bool;
     }
 
-    update() {
-        this._setDot();
+    updateClass() {
+        if (!this.dom.classList.contains(this.status)) {
+            this.dom.classList.remove('type-0', 'type-1', 'type-2', 'screen-center');
+        }
+        this.dom.classList.add(this.status);
+
+        if (!this.dom.classList.contains(this.dot)) {
+            this.dom.classList.remove('left', 'center', 'right');
+        }
+        this.dom.classList.add(this.dot);
+
+        if (this.showDot) {
+            this.dom.classList.add('show-dot');
+        } else {
+            this.dom.classList.remove('show-dot');
+        }
+    }
+    updateStyle() {
         // 設定位置
-        dom.style.transform = '';
-        dom.style.width = `${this.size[0]}px`;
-        dom.style.height = `${this.size[1]}px`;
+        this.dom.style.transform = '';
 
-        dom.classList.remove('shape', 'tunnel', 'button');
-        dom.classList.add(this.status);
+        this.dom.style.left = `${this.position.x}%`;
+        this.dom.style.top = `${this.position.y}%`;
+        this.dom.style.transform = `translateZ(${this.position.z}px)`;
 
-        dom.classList.remove('left', 'center', 'right');
-        dom.classList.add(this.dot);
+        this.dom.style.fontSize = `${this.size}px`;
+
+        this.dom.style.opacity = this.opacity;
+    }
+
+    appendTo(parentDom) {
+        parentDom.appendChild(this.dom);
+    }
+    getDot() {
+        this.dom.classList.add('get-dot')
     }
 
     // 可能可以多加互動
@@ -87,24 +171,117 @@ class Tunnel {
 
     _setDot() {
         this.dot = ['left', 'center', 'right'][Math.floor(Math.random() * 3)];
+        // this.dot = 'center';
     }
 };
 
-
 class TunnelList {
-    constructor(list) {
+    constructor(list, msg) {
         this.list = list;
+        this.msg = msg;
+        this._init();
     }
 
-    speed = 5;
-    // 加速度
-    acceleration = 5;
+    speed = 1;
+    canMove = false;
 
+    point = 0;
+    msg;
     list = [];
+    msgData = {
+        init: '100 Divs Challenge !',
+        info: 'Use ← And → Operation',
+    }
+    _init() { }
+    start() {
+        let i = 0;
+        const size = WINDOWSIZE.height * 1.2;
+        this.setMsgPos(0);
+        const interval = setInterval(() => {
+            const tunnel = this.list[i];
+            if (tunnel) {
+                tunnel.setStatus('screen-center');
+                tunnel.updateClass();
+                tunnel.setSize(size);
+                tunnel.setOpacity(1);
+                tunnel.setPosition(50, 50, (-i - 1) * 768);
+                i++;
+            } else {
+                this.setMsg(this.msgData.info);
+                setTimeout(() => {
+                    this.setMsgPos(1);
+                    let time = 3
+                    SPACESHIP.setCanMove(true);
+                    const innerInterval = setInterval(() => {
+                        this.setMsg(time);
+                        time--
+                        if (time === -1) {
+                            this.canMove = true;
+                            clearInterval(innerInterval);
+                        }
+                    }, 1000);
+                }, 2000);
 
-    advance() {}
+                this.list.forEach(tunnel2 => {
+                    tunnel2.setShowDot(true);
+                    tunnel2.updateClass();
+                });
+                clearInterval(interval);
 
-    checkGetDot(spaceship) {}
+            }
+        }, 10);
+    }
+    go(spaceship) {
+        this._move(this.speed, spaceship);
+        if (this.speed < 64) {
+            this.speed += this.speed;
+        }
+        this.setMsg(`POINT: ${this.point}`);
+        if (this.point == 10) {
+            this.bodySee(1);
+        } else if (this.point == 40) {
+            this.bodySee(2);
+        } else if (this.point == 45) {
+            this.bodySee(3);
+        } else if (this.point == 55) {
+            this.bodySee(4);
+        }
+        if (this.list[this.list.length - 1].position.z > 500) {
+            this.bodySee(0);
+            setTimeout(() => {
+                GameType = 'end';
+            }, 1000);
+        }
+    }
+    setMsg(msg) {
+        this.msg.innerHTML = msg;
+    }
+    setMsgPos(index) {
+        this.msg.classList.remove('pos-0', 'pos-1');
+        this.msg.classList.add(`pos-${index}`);
+    }
+    bodySee(index) {
+        const list = ['see-top', 'see-top-left', 'see-bottom-left', 'see-bottom-right', 'see-top-right'];
+        document.body.classList.remove(...list);
+        document.body.classList.add(list[index]);
+    }
+    _move(number, spaceship) {
+        this.list.forEach((tunnel, i) => {
+            tunnel.setPosition(
+                tunnel.position.x,
+                tunnel.position.y,
+                tunnel.position.z + number
+            );
+            if (Math.abs(tunnel.position.z) < 10) {
+                this._checkGetDot(tunnel, spaceship);
+            }
+        })
+    }
+    _checkGetDot(tunnel, spaceship) {
+        if (tunnel.dot === spaceship.alignList[spaceship.align]) {
+            this.point++;
+            tunnel.getDot();
+        }
+    }
 
-    
 }
