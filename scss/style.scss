@@ -32,8 +32,8 @@ body {
     }
     &.see-top {
         perspective-origin: 50% -5%;
+        transition: 2s;
         &::before {
-            transition: 2s;
             transform: translate(0, -20vw);
         }
     }

@@ -35,8 +35,12 @@ class Spaceship {
         this._eventData[name].push(fn);
     }
     setAlign(align) {
-        console.log(align)
-        // 1 || -1
+        // 1 || -1 || center
+        if (align === 'center') {
+            this.align = 1;
+            this.updatePosition();
+            return;
+        }
         if (
             this.align + align < 0 ||
             this.align + align > 2
@@ -61,6 +65,10 @@ class Spaceship {
 
     start() {
         this.dom.classList.add('start');
+    }
+    end() {
+        this.dom.style.transition = '5s';
+        this.setAlign(0);
     }
 }
 
@@ -196,44 +204,66 @@ class TunnelList {
     start() {
         let i = 0;
         const size = WINDOWSIZE.height * 1.2;
-        this.setMsgPos(0);
-        const interval = setInterval(() => {
+        const transformFn = (min, max, _, i, arr) => {
+            if (i < min || i > max) {
+                return false;
+            };
             const tunnel = this.list[i];
-            if (tunnel) {
-                tunnel.setStatus('screen-center');
-                tunnel.updateClass();
-                tunnel.setSize(size);
-                tunnel.setOpacity(1);
-                tunnel.setPosition(50, 50, (-i - 1) * 768);
-                i++;
-            } else {
-                this.setMsg(this.msgData.info);
-                setTimeout(() => {
-                    this.setMsgPos(1);
-                    let time = 3
-                    SPACESHIP.setCanMove(true);
-                    const innerInterval = setInterval(() => {
-                        this.setMsg(time);
-                        time--
-                        if (time === -1) {
-                            this.canMove = true;
-                            clearInterval(innerInterval);
-                        }
-                    }, 1000);
-                }, 2000);
+            tunnel.dom.style.display = 'block';
+            tunnel.setStatus('screen-center');
+            tunnel.updateClass();
+            tunnel.setSize(size);
+            tunnel.setOpacity(1);
+            tunnel.setPosition(50, 50, (-i - 1) * 832);
+        }
+        this.list.forEach((tunnel) => {
+            tunnel.dom.style.display = 'none';
+        })
+        this.list.forEach(transformFn.bind(this, 0, 20));
 
-                this.list.forEach(tunnel2 => {
-                    tunnel2.setShowDot(true);
-                    tunnel2.updateClass();
-                });
-                clearInterval(interval);
+        setTimeout(() => {
+            this.list.forEach(transformFn.bind(this, 21, 40));
+            this.bodySee(0);
+            this.setMsgPos(0);
+        }, 1000);
+        setTimeout(() => {
+            this.list.forEach(transformFn.bind(this, 41, 60));
+        }, 2000);
+        setTimeout(() => {
+            this.setMsg(this.msgData.info);
+            SPACESHIP.setCanMove(true);
+            this.list.forEach(transformFn.bind(this, 61, 80));
+        }, 3000);
+        setTimeout(() => {
+            this.list.forEach(transformFn.bind(this, 81, 100));
+        }, 4000);
+        setTimeout(() => {
+            this.setMsgPos(1);
+            let time = 3
+            
+            const innerInterval = setInterval(() => {
+                this.setMsg(time);
+                time--
+                if (time === -1) {
+                    this.canMove = true;
+                    clearInterval(innerInterval);
+                }
+            }, 1000);
 
-            }
-        }, 10);
+            this.list.forEach(tunnel2 => {
+                tunnel2.setShowDot(true);
+                tunnel2.updateClass();
+            });
+
+        }, 5000);
+    }
+    end() {
+        document.body.style.transition = '10s';
+        GameType = 'end';
     }
     go(spaceship) {
         this._move(this.speed, spaceship);
-        if (this.speed < 64) {
+        if (this.speed < 32) {
             this.speed += this.speed;
         }
         this.setMsg(`POINT: ${this.point}`);
@@ -249,7 +279,9 @@ class TunnelList {
         if (this.list[this.list.length - 1].position.z > 500) {
             this.bodySee(0);
             setTimeout(() => {
-                GameType = 'end';
+                spaceship.setAlign('center');
+                spaceship.end();
+                this.end();
             }, 1000);
         }
     }

@@ -41,15 +41,12 @@ SPACESHIP.addEventListener('click', () => {
         animation();
         SPACESHIP.start();
         TUNNELLIST.start();
-        setTimeout(() => {
-            TUNNELLIST.bodySee(0);
-        }, 1000);
     } else if (GameType === 'end') {
 
     }
 });
 document.body.addEventListener('keydown', (e) => {
-    if (SPACESHIP.canMove) {
+    if (SPACESHIP.canMove && GameType === 'start') {
         if (
             e.key === 'ArrowRight' ||
             e.key === 'ArrowLeft'

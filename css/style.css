@@ -43,11 +43,11 @@ body {
     z-index: -1; }
   body.see-top {
     -webkit-perspective-origin: 50% -5%;
-    perspective-origin: 50% -5%; }
+    perspective-origin: 50% -5%;
+    -webkit-transition: 2s;
+    -o-transition: 2s;
+    transition: 2s; }
     body.see-top::before {
-      -webkit-transition: 2s;
-      -o-transition: 2s;
-      transition: 2s;
       -webkit-transform: translate(0, -20vw);
       -ms-transform: translate(0, -20vw);
       transform: translate(0, -20vw); }
