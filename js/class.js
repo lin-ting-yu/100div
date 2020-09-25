@@ -154,7 +154,11 @@ class Tunnel {
             this.dom.classList.remove('show-dot');
         }
     }
-    updateStyle() {
+    updateStyle(z = false) {
+        if (z) {
+            this.dom.style.transform = `translateZ(${this.position.z}px)`;
+            return;
+        }
         // 設定位置
         this.dom.style.transform = '';
 
@@ -198,9 +202,21 @@ class TunnelList {
     list = [];
     msgData = {
         init: '100 Divs Challenge !',
-        info: 'Use ← And → Operation',
+        info: 'Use Key: \'←\' And \'→\' Operation',
     }
-    _init() { }
+    nowPos = 0;
+    tunnelGap = 832;
+    allTunnelLangth = 0;
+    keyLangthList = [];
+    bodySeeIndex = 0;
+
+    _init() {
+        this.allTunnelLangth = this.tunnelGap * (this.list.length - 1)
+        const oneGap = this.allTunnelLangth / 5;
+        this.keyLangthList = [
+            oneGap, oneGap * 2, oneGap * 3, oneGap * 4
+        ]
+    }
     start() {
         let i = 0;
         const size = WINDOWSIZE.height * 1.2;
@@ -209,12 +225,12 @@ class TunnelList {
                 return false;
             };
             const tunnel = this.list[i];
-            tunnel.dom.style.display = 'block';
             tunnel.setStatus('screen-center');
             tunnel.updateClass();
             tunnel.setSize(size);
             tunnel.setOpacity(1);
-            tunnel.setPosition(50, 50, (-i - 1) * 832);
+            tunnel.setPosition(50, 50, (-i - 1) * this.tunnelGap);
+            tunnel.dom.style.display = '';
         }
         this.list.forEach((tunnel) => {
             tunnel.dom.style.display = 'none';
@@ -222,25 +238,17 @@ class TunnelList {
         this.list.forEach(transformFn.bind(this, 0, 20));
 
         setTimeout(() => {
-            this.list.forEach(transformFn.bind(this, 21, 40));
+            this.list.forEach(transformFn.bind(this, 21, 60));
             this.bodySee(0);
             this.setMsgPos(0);
         }, 1000);
         setTimeout(() => {
-            this.list.forEach(transformFn.bind(this, 41, 60));
+            this.list.forEach(transformFn.bind(this, 61, 100));
         }, 2000);
-        setTimeout(() => {
-            this.setMsg(this.msgData.info);
-            SPACESHIP.setCanMove(true);
-            this.list.forEach(transformFn.bind(this, 61, 80));
-        }, 3000);
-        setTimeout(() => {
-            this.list.forEach(transformFn.bind(this, 81, 100));
-        }, 4000);
         setTimeout(() => {
             this.setMsgPos(1);
             let time = 3
-            
+
             const innerInterval = setInterval(() => {
                 this.setMsg(time);
                 time--
@@ -267,14 +275,9 @@ class TunnelList {
             this.speed += this.speed;
         }
         this.setMsg(`POINT: ${this.point}`);
-        if (this.point == 10) {
-            this.bodySee(1);
-        } else if (this.point == 40) {
-            this.bodySee(2);
-        } else if (this.point == 45) {
-            this.bodySee(3);
-        } else if (this.point == 55) {
-            this.bodySee(4);
+        if (this.nowPos > this.keyLangthList[0] && this.keyLangthList.length) {
+            this.keyLangthList.shift();
+            this.bodySee(++this.bodySeeIndex);
         }
         if (this.list[this.list.length - 1].position.z > 500) {
             this.bodySee(0);
@@ -293,11 +296,16 @@ class TunnelList {
         this.msg.classList.add(`pos-${index}`);
     }
     bodySee(index) {
+        PauseAnimation = true;
         const list = ['see-top', 'see-top-left', 'see-bottom-left', 'see-bottom-right', 'see-top-right'];
         document.body.classList.remove(...list);
         document.body.classList.add(list[index]);
+        setTimeout(() => {
+            PauseAnimation = false;
+        }, 1000);
     }
     _move(number, spaceship) {
+        this.nowPos += number;
         this.list.forEach((tunnel, i) => {
             tunnel.setPosition(
                 tunnel.position.x,
@@ -307,6 +315,7 @@ class TunnelList {
             if (Math.abs(tunnel.position.z) < 10) {
                 this._checkGetDot(tunnel, spaceship);
             }
+            tunnel.updateStyle(true);
         })
     }
     _checkGetDot(tunnel, spaceship) {
