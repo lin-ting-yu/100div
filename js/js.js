@@ -2,8 +2,7 @@ const WINDOWSIZE = {
     width: window.innerWidth,
     height: window.innerHeight
 };
-let GameType = 'init'; // init || start || end
-let PauseAnimation = false;
+let GameType = 'init'; // init || start || end || replay
 const SPACESHIP = new Spaceship(document.querySelector('.spaceship'));
 const TUNNELLIST = new TunnelList(
     [...('.'.repeat(98))].map((_, i) => {
@@ -21,22 +20,18 @@ const TUNNELLIST = new TunnelList(
 );
 
 
-let goTimes = 0;
 const animation = () => {
-    if (PauseAnimation) {
-        requestAnimationFrame(animation);
-        return;
-    }
-    if (TUNNELLIST.canMove) {
-        console.log(goTimes++);
-        TUNNELLIST.go(SPACESHIP);
-    } else {
-        TUNNELLIST.list.forEach(tunnel => {
-            tunnel.updateStyle();
-        })
-    }
-    if (GameType !== 'start') {
-        return;
+    if (TUNNELLIST.speed) {
+        if (TUNNELLIST.canMove) {
+            TUNNELLIST.go(SPACESHIP);
+        } else {
+            TUNNELLIST.list.forEach(tunnel => {
+                tunnel.updateStyle();
+            })
+        }
+        if (GameType !== 'start') {
+            return;
+        }
     }
     requestAnimationFrame(animation);
 }
@@ -49,8 +44,11 @@ SPACESHIP.addEventListener('click', () => {
         animation();
         SPACESHIP.start();
         TUNNELLIST.start();
-    } else if (GameType === 'end') {
-
+    } else if (GameType === 'replay') {
+        SPACESHIP.start();
+        TUNNELLIST.start();
+        GameType = 'start';
+        animation();
     }
 });
 document.body.addEventListener('keydown', (e) => {
