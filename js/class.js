@@ -252,6 +252,7 @@ class TunnelList {
         ]
     }
     _reset() {
+        this.msg.classList.remove('height-light');
         this.bodySeeIndex = 0;
         this.speed = 1;
         this.canMove = false;
@@ -384,6 +385,16 @@ class TunnelList {
                     this.setMsg(`POINT: ${++this.point}`);
                     next();
                 }, 1000);
+            }),
+            () => new Promise(next => {
+                if (this.point === this.list.length + 2) {
+                    setTimeout(() => {
+                        this.msg.classList.add('height-light');
+                        next();
+                    }, 500);
+                } else {
+                    next();
+                }
             }),
             () => {
                 document.body.style.transition = '';

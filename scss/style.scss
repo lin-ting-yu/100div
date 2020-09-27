@@ -325,13 +325,70 @@ body {
     transform: translateX(-50%);
     transition: 1s;
     text-shadow: 0 0 10px rgba(#000, 0.5);
+
+    animation-duration: 1s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
     &.pos-0 {
-        
         top: calc(50% + 50px);
     }
     &.pos-1 {
         transition: 4s;
         top: calc(100% - 50px);
+    }
+    &.height-light {
+        animation: name duration timing-function delay iteration-count direction fill-mode;
+        animation: 
+            height-light 1s 0.2s ease-in-out infinite alternate,
+            jump 1s 1
+        ;
+    }
+}
+@keyframes jump {
+    0% {
+        transform: translateX(-50%) scale(1);
+    }
+    30% {
+        transform: translateX(-50%) scale(0.9);
+    }
+    60% {
+        transform: translateX(-50%) scale(1.2);
+    }
+    75% {
+        transform: translateX(-50%) scale(0.9);
+    }
+    100% {
+        transform: translateX(-50%) scale(1);
+    }
+}
+@keyframes height-light {
+    $light-color-1: #ff1177;
+    $light-color-2: #4ba4ff;
+    $num: 2;
+    from {
+        text-shadow: 
+            0 0 (0.1em * $num) #fff,
+            0 0 (0.2em * $num) #fff,
+            0 0 (0.3em * $num) #fff,
+            0 0 (0.4em * $num) $light-color-1,
+            0 0 (0.7em * $num) $light-color-1,
+            0 0 (0.8em * $num) $light-color-1,
+            0 0 (0.10em * $num) $light-color-1,
+            0 0 (0.15em * $num) $light-color-1
+        ;
+    }
+    to {
+        text-shadow: 
+            0 0 (0.05em * $num) #fff,
+            0 0 (0.1em * $num) #fff,
+            0 0 (0.15em * $num) #fff,
+            0 0 (0.2em * $num) $light-color-2,
+            0 0 (0.35em * $num) $light-color-2,
+            0 0 (0.4em * $num) $light-color-2,
+            0 0 (0.5em * $num) $light-color-2, 
+            0 0 (0.75em * $num) $light-color-2
+        ;
     }
 }
 
