@@ -20,17 +20,23 @@ const TUNNELLIST = new TunnelList(
 );
 
 
+let prevTime = new Date().getTime();
+
 const animation = () => {
-    if (TUNNELLIST.speed) {
-        if (TUNNELLIST.canMove) {
-            TUNNELLIST.go(SPACESHIP);
-        } else {
-            TUNNELLIST.list.forEach(tunnel => {
-                tunnel.updateStyle();
-            })
-        }
-        if (GameType !== 'start') {
-            return;
+    const now = new Date().getTime();
+    if (now - prevTime > 16) {
+        prevTime = now;
+        if (TUNNELLIST.speed) {
+            if (TUNNELLIST.canMove) {
+                TUNNELLIST.go(SPACESHIP);
+            } else {
+                TUNNELLIST.list.forEach(tunnel => {
+                    tunnel.updateStyle();
+                })
+            }
+            if (GameType !== 'start') {
+                return;
+            }
         }
     }
     requestAnimationFrame(animation);
